@@ -3,7 +3,7 @@
     <div class="pagehead">
         <div>
             <div class="kicker">
-                <i class="fa-solid fa-street-view"></i> WORKSPACE SURVEYOR LAPANGAN
+                WORKSPACE SURVEYOR LAPANGAN
             </div>
             <h1>Field Workspace</h1>
             <p class="muted">

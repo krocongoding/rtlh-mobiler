@@ -81,8 +81,11 @@
     </x-slot>
 
     @push('head')
-        @if($house->latitude && $house->longitude)
-            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+        @if($house->latitude !== null && $house->longitude !== null)
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        />
         @endif
     @endpush
 
@@ -331,23 +334,49 @@
 
             <div class="photos" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px;">
                 @foreach($house->photos as $photo)
-                    <div style="border:1px solid var(--slate-200); border-radius:var(--radius-md); overflow:hidden; background:var(--slate-50);">
-                        <button type="button" onclick="openPhotoPreview(@js(asset('storage/' . $photo->path)), @js($photo->caption ?? ucfirst(str_replace(['photo_', '_'], ['', ' '], $photo->type ?? 'Foto'))))" style="display:block; width:100%; border:0; padding:0; background:none; cursor:zoom-in;" title="Klik untuk melihat foto lebih besar">
-                            <img
-                                src="{{ asset('storage/' . $photo->path) }}"
-                                alt="{{ $photo->caption ?? 'Foto Rumah' }}"
-                                style="width:100%; height:160px; object-fit:cover; display:block;"
-                                onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';"
-                            >
-                        </button>
-                        <div style="display:none; height:160px; align-items:center; justify-content:center; background:var(--slate-100); color:var(--slate-400); font-size:13px;">
-                            <i class="fa-solid fa-image-slash"></i> Foto tidak ditemukan
-                        </div>
-                        <div style="padding:8px 12px; font-size:12px; font-weight:700; color:var(--slate-700);">
-                            {{ ucfirst(str_replace(['photo_', '_'], ['', ' '], $photo->type ?? $photo->caption ?? 'Foto')) }}
-                        </div>
-                    </div>
-                @endforeach
+
+    @php
+        $photoDisk = $photo->disk ?: 'public';
+        $photoUrl = \Illuminate\Support\Facades\Storage::disk($photoDisk)->url($photo->path);
+
+        $photoCaption = $photo->caption
+            ?? ucfirst(str_replace(
+                ['photo_', '_'],
+                ['', ' '],
+                $photo->type ?? 'Foto'
+            ));
+    @endphp
+
+    <div style="border:1px solid var(--slate-200); border-radius:var(--radius-md); overflow:hidden; background:var(--slate-50);">
+
+        <button
+            type="button"
+            onclick="openPhotoPreview(@js($photoUrl), @js($photoCaption))"
+            style="display:block; width:100%; border:0; padding:0; background:none; cursor:zoom-in;"
+            title="Klik untuk melihat foto lebih besar"
+        >
+            <img
+                src="{{ $photoUrl }}"
+                alt="{{ $photoCaption }}"
+                style="width:100%; height:160px; object-fit:cover; display:block;"
+                onerror="this.style.display='none'; this.parentElement.nextElementSibling.style.display='flex';"
+            >
+        </button>
+
+        <div
+            style="display:none; height:160px; align-items:center; justify-content:center; background:var(--slate-100); color:var(--slate-400); font-size:13px;"
+        >
+            <i class="fa-solid fa-image-slash"></i>
+            Foto tidak ditemukan
+        </div>
+
+        <div style="padding:8px 12px; font-size:12px; font-weight:700; color:var(--slate-700);">
+            {{ $photoCaption }}
+        </div>
+
+    </div>
+
+@endforeach
             </div>
         </div>
     @endif
@@ -482,41 +511,35 @@
         </div>
     @endif
 
-    @push('scripts')
+        @push('scripts')
         <script>
             function openPhotoPreview(source, caption) {
-                document.getElementById('photo-preview-image').src = source;
-                document.getElementById('photo-preview-image').alt = caption;
-                document.getElementById('photo-preview-caption').textContent = caption;
-                document.getElementById('photo-preview-modal').style.display = 'flex';
+                const modal = document.getElementById('photo-preview-modal');
+                const image = document.getElementById('photo-preview-image');
+                const captionEl = document.getElementById('photo-preview-caption');
+
+                image.src = source;
+                image.alt = caption || 'Foto Rumah';
+                captionEl.textContent = caption || 'Foto Rumah';
+
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
             }
 
             function closePhotoPreview() {
-                document.getElementById('photo-preview-modal').style.display = 'none';
+                const modal = document.getElementById('photo-preview-modal');
+                const image = document.getElementById('photo-preview-image');
+
+                modal.style.display = 'none';
+                image.src = '';
+                document.body.style.overflow = '';
             }
 
             document.addEventListener('keydown', function (event) {
-                if (event.key === 'Escape') closePhotoPreview();
+                if (event.key === 'Escape') {
+                    closePhotoPreview();
+                }
             });
         </script>
-        @if($house->latitude !== null && $house->longitude !== null)
-            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-            <script>
-                document.addEventListener('DOMContentLoaded', function () {
-                    const lat = {{ $house->latitude }};
-                    const lng = {{ $house->longitude }};
-                    const miniMap = L.map('mini-map', { zoomControl: false, scrollWheelZoom: false }).setView([lat, lng], 15);
-
-                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                        maxZoom: 19,
-                        attribution: '&copy; OpenStreetMap'
-                    }).addTo(miniMap);
-
-                    L.marker([lat, lng]).addTo(miniMap)
-                        .bindPopup('<strong>{{ $house->house_code }}</strong><br>{{ $house->region?->name ?? "Cirebon" }}')
-                        .openPopup();
-                });
-            </script>
-        @endif
-    @endpush
+        @endpush
 </x-app-layout>

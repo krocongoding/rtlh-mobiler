@@ -5,6 +5,8 @@ use App\Http\Controllers\Api\HousePhotoApiController;
 use App\Http\Controllers\Api\SurveyorApiController;
 use App\Http\Controllers\Api\SyncApiController;
 use App\Http\Controllers\PublicApiController;
+use App\Http\Controllers\Api\V1\MobileAuthController;
+use App\Http\Controllers\Api\V1\MobileMasterController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,6 +41,45 @@ Route::prefix('v1/auth')->group(function () {
 
     Route::post('/login', [AuthApiController::class, 'login'])
         ->name('api.auth.login');
+
+});
+
+/*
+|--------------------------------------------------------------------------
+| MOBILE API
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('v1/mobile')->group(function () {
+
+    Route::post('/auth/login', [
+        MobileAuthController::class,
+        'login'
+    ])->name('api.mobile.login');
+
+    Route::middleware('auth:sanctum')->group(function () {
+
+    Route::get('/master', [
+        MobileMasterController::class,
+        'index'
+    ])->name('api.mobile.master');
+
+    // route me + logout yang sebelumnya
+});
+
+    Route::middleware('auth:sanctum')->group(function () {
+
+        Route::get('/auth/me', [
+            MobileAuthController::class,
+            'me'
+        ])->name('api.mobile.me');
+
+        Route::post('/auth/logout', [
+            MobileAuthController::class,
+            'logout'
+        ])->name('api.mobile.logout');
+
+    });
 
 });
 

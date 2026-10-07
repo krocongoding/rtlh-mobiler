@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class House extends Model
 {
-    protected $fillable = [
+        protected $fillable = [
+        'client_uuid',
         'region_id',
         'house_code',
         'address',
@@ -23,8 +24,6 @@ class House extends Model
         'created_by',
         'updated_by',
         'location',
-        'latitude',
-        'longitude',
         'settlement_condition_id',
         'room_function_id',
         'ownership_status_id',

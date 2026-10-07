@@ -3,7 +3,7 @@
     <div class="pagehead">
         <div>
             <div class="kicker">
-                <i class="fa-solid fa-crown"></i> ADMINISTRATOR WORKSPACE
+                ADMINISTRATOR WORKSPACE
             </div>
             <h1>Command Center RTLH</h1>
             <p class="muted">
@@ -96,7 +96,7 @@
     {{-- QUICK ACTION HUB --}}
     <div class="card" style="margin-top: 24px; padding: 28px;">
         <h3 style="font-size: 18px; font-weight: 800; color: var(--slate-900); margin-bottom: 6px;">
-            <i class="fa-solid fa-bolt text-amber-500" style="color:#f59e0b;"></i> Pintasan & Manajemen Utama
+            Pintasan
         </h3>
         <p class="muted" style="margin-bottom: 20px;">Akses cepat untuk memproses data dan meninjau modul sistem.</p>
 
